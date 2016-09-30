@@ -1,0 +1,1082 @@
+---
+meta:
+  cf:
+    base_domain: (( param "Enter the Cloud Foundry base domain" ))
+    apps_domains: [ (( concat "run." meta.cf.base_domain )) ]
+    system_domain: (( concat "system." meta.cf.base_domain ))
+    creds:
+      admin:
+        user: admin
+        pass: (( vault meta.vault_prefix "/creds/users/admin:password" ))
+      autoscale_broker:
+        user: autoscale-broker
+        password: (( vault meta.vault_prefix "/creds/autoscale:password" ))
+      blobstore:
+        user: blobstore
+        pass: (( vault meta.vault_prefix "/creds/blobstore:webdav_password" ))
+        secret: (( vault meta.vault_prefix "/creds/blobstore:secret" ))
+      cc:
+        bulk_api_user: bulk_api_user
+        bulk_api_password: (( vault meta.vault_prefix "/creds/cc:bulk_api" ))
+        internal_api_user: internal_api_user
+        internal_api_password: (( vault meta.vault_prefix "/creds/cc:internal_api" ))
+        staging_upload_user: staging_upload_user
+        staging_upload_password: (( vault meta.vault_prefix "/creds/cc:staging_upload" ))
+        db_encryption_key: (( vault meta.vault_prefix "/creds/cc:db_encryption_key" ))
+      loggregator:
+        endpoint_secret: (( vault meta.vault_prefix "/creds/loggregator:endpoint_secret" ))
+      gorouter:
+        route_svcs_secret: (( vault meta.vault_prefix "/creds/gorouter:route_svcs_secret" ))
+        status_user: health
+        status_pass: (( vault meta.vault_prefix "/creds/gorouter:status_api_pass" ))
+      uaa:
+        admin_client_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:admin_client" ))
+        cc_client_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:cc_client" ))
+        cc_broker_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:cc_broker" ))
+        cc_routing_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:cc_routing" ))
+        cc_user_lookup_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:cc_user_lookup" ))
+        login_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:login" ))
+        doppler_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:doppler" ))
+        gorouter_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:gorouter" ))
+        notifications_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:notifications" ))
+        notifications_ui_client_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:notifications_ui_client" ))
+        ssh_proxy_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:ssh_proxy" ))
+        tcp_emitter_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:tcp_emitter" ))
+        tcp_router_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:tcp_router" ))
+        autoscaler_client_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:autoscaler_client" ))
+        opentsdb_firehose_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:opentsdb_firehose" ))
+        identity_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:identity" ))
+        portal_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:portal" ))
+        usage_service_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:usage_service" ))
+        invitations_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:invitations" ))
+        system_passwords_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:system_password" ))
+        cc_service_dashboards_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:cc_service_dashboards" ))
+        notifications_template: (( vault meta.vault_prefix "/creds/uaa/secrets:notifications_template" ))
+        apps_metrics_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:apps_metrics" ))
+        apps_metrics_processing_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:apps_metrics_processing" ))
+        pivotal_account_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:pivotal_account" ))
+        concourse_atc_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:concourse_atc" ))
+        push_notifications_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:push_notifications" ))
+        push_api_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:push_api" ))
+        greenplum_broker_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:greenplum_broker" ))
+        greenplum_router_admin_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:greenplum_router_admin" ))
+        greenplum_router_secret: (( vault meta.vault_prefix "/creds/uaa/secrets:greenplum_router" ))
+      diego:
+        secret: (( vault meta.vault_prefix "/creds/diego:secret" ))
+        encryption_key: (( vault meta.vault_prefix "/creds/diego:encryption_key" ))
+
+    blobstore_config:
+      blobstore_type: (( param "Set the blobstore type (webdav or fog)" ))
+      fog_connection: (( param "Configure fog for the blobstore access, or nullify if not using" ))
+      cdn: null
+      webdav_config:
+        blobstore_timeout: 5
+        ca_cert: (( vault meta.vault_prefix "/certs/internal_ca:cert" ))
+        password: (( grab meta.cf.creds.blobstore.pass ))
+        private_endpoint: https://blobstore.service.cf.internal:4443
+        public_endpoint: (( concat "http://blobstore." meta.cf.system_domain ))
+        username: (( grab meta.cf.creds.blobstore.user ))
+
+    ccdb:
+      host: (( param "What hostname/IP is the ccdb available at?" ))
+      port: (( param "What port is the ccdb listening on?" ))
+      scheme: (( param "Specify the type of database the ccdb is (postgres, mysql)" ))
+      user: (( param "Specify the user to connect to the ccdb" ))
+      pass:  (( param "Specify the password of the ccdb user" ))
+      dbname: ccdb
+
+    consul:
+      servers: (( param "Specify which IPs are being used by consul servers" ))
+      agent_cert: (( vault meta.vault_prefix "/certs/consul_client:cert" ))
+      agent_key: (( vault meta.vault_prefix "/certs/consul_client:key" ))
+      server_cert: (( vault meta.vault_prefix "/certs/consul_server:cert" ))
+      server_key: (( vault meta.vault_prefix "/certs/consul_server:key" ))
+      ca_cert: (( vault meta.vault_prefix "/certs/internal_ca:cert" ))
+      encryption_key: (( vault meta.vault_prefix "/creds/cc:db_encryption_key" ))
+
+    gorouter:
+      servers: (( param "Enter the IPs of the gorouters" ))
+    etcd:
+      servers: (( param "Enter the IPs of the etcd servers" ))
+      ca_cert: (( vault meta.vault_prefix "/certs/internal_ca:cert" ))
+      client_cert: (( vault meta.vault_prefix "/certs/etcd_client:cert" ))
+      client_key: (( vault meta.vault_prefix "/certs/etcd_client:key" ))
+      peer_cert: (( vault meta.vault_prefix "/certs/etcd_peer:cert" ))
+      peer_key: (( vault meta.vault_prefix "/certs/etcd_peer:key" ))
+      server_cert: (( vault meta.vault_prefix "/certs/etcd_server:cert" ))
+      server_key: (( vault meta.vault_prefix "/certs/etcd_server:key" ))
+      cluster: (( param "Enter the etcd cluster instances" ))
+    nats:
+      servers: (( param "Enter the IPs of the nats servers" ))
+      user: nats_user
+      pass: (( vault meta.vault_prefix "/creds/nats:password" ))
+    uaa:
+      jwt_private_key: (( vault meta.vault_prefix "/jwt_signing_key:private" ))
+      jwt_public_key: (( vault meta.vault_prefix "/jwt_signing_key:public" ))
+      ssl_cert: (( vault meta.vault_prefix "/certs/uaa:cert" ))
+      ssl_key: (( vault meta.vault_prefix "/certs/uaa:key" ))
+    uaadb:
+      host: (( param "What hostname/IP is the uaadb available at?" ))
+      port: (( param "What port is the uaadb listening on?" ))
+      scheme: (( param "Specify the type of database the uaadb is (postgres, mysql)" ))
+      user: (( param "Specify the user to connect to the uaadb" ))
+      pass: (( param "Specify the password of the uaadb user" ))
+      dbname: uaadb
+
+    diegodb:
+      host: (( param "What hostname/IP is the diegodb available at?" ))
+      port: (( param "What port is the diegodb listening on?" ))
+      scheme: (( param "Specify the type of database the diegodb is (postgres, mysql)" ))
+      user: (( param "Specify the user to connect to the diegodb" ))
+      pass: (( param "Specify the password of the diegodb user" ))
+      dbname: diegodb
+
+    bbs:
+      api_location: null
+      ca_cert: (( vault meta.vault_prefix "/certs/internal_ca:cert" ))
+      client_cert: (( vault meta.vault_prefix "/certs/bbs_client:cert" ))
+      client_key: (( vault meta.vault_prefix "/certs/bbs_client:key" ))
+      client_session_cache_size: null
+      max_idle_conns_per_host: null
+      require_ssl: true
+      server_cert: (( vault meta.vault_prefix "/certs/bbs:cert" ))
+      server_key: (( vault meta.vault_prefix "/certs/bbs:key" ))
+
+  skip_ssl_validation: false
+
+properties:
+  acceptance_tests:
+    admin_password: (( grab meta.cf.creds.admin.pass ))
+    admin_user: (( grab meta.cf.creds.admin.user ))
+    api: (( concat "https://api." meta.cf.system_domain ))
+    apps_domain: (( grab meta.cf.apps_domains.0 ))
+    system_domain: (( grab meta.cf.system_domain ))
+    nodes: 1
+    skip_ssl_validation: (( grab meta.skip_ssl_validation ))
+    use_http: true
+    backend: diego
+    include_backend_compatibility: true
+    include_internet_dependent: true
+    include_diego_docker: true
+    include_diego_ssh: true
+    include_operator: true
+    include_logging: true
+    include_route_services: false
+    include_routing: true
+    include_security_groups: true
+    include_services: true
+    include_sso: true
+    skip_diego_unsupported_tests: true
+
+  app_domains: (( grab meta.cf.apps_domains ))
+  app_ssh:
+    host_key_fingerprint: (( vault meta.vault_prefix "/app_ssh:fingerprint" ))
+    oauth_client_id: ssh-proxy
+  blobstore:
+    admin_users:
+    - password: (( grab meta.cf.creds.blobstore.pass ))
+      username: (( grab meta.cf.creds.blobstore.user ))
+    port: 8080
+    secure_link:
+      secret: (( grab meta.cf.creds.blobstore.secret ))
+    tls:
+      ca_cert: (( vault meta.vault_prefix "/certs/internal_ca:cert" ))
+      cert: (( vault meta.vault_prefix "/certs/blobstore:cert" ))
+      port: 4443
+      private_key: (( vault meta.vault_prefix "/certs/blobstore:key" ))
+  cc:
+    allow_app_ssh_access: true
+    allowed_cors_domains: []
+    app_events:
+      cutoff_age_in_days: 31
+    app_usage_events:
+      cutoff_age_in_days: 31
+    audit_events:
+      cutoff_age_in_days: 31
+    broker_client_default_async_poll_interval_seconds: null
+    broker_client_max_async_poll_duration_minutes: null
+    broker_client_timeout_seconds: 70
+    buildpacks:
+      .: (( inject meta.cf.blobstore_config ))
+      buildpack_directory_key: (( concat meta.cf.base_domain "-cc-buildpacks" ))
+    bulk_api_password: (( grab meta.cf.creds.cc.bulk_api_password ))
+    client_max_body_size: 15M
+    db_encryption_key: (( grab meta.cf.creds.cc.db_encryption_key ))
+    db_logging_level: debug2
+    default_app_disk_in_mb: 1024
+    default_app_memory: 256
+    default_buildpacks:
+    - name: staticfile_buildpack
+      package: staticfile-buildpack
+    - name: java_buildpack
+      package: buildpack_java
+    - name: ruby_buildpack
+      package: ruby-buildpack
+    - name: nodejs_buildpack
+      package: nodejs-buildpack
+    - name: go_buildpack
+      package: go-buildpack
+    - name: python_buildpack
+      package: python-buildpack
+    - name: php_buildpack
+      package: php-buildpack
+    - name: binary_buildpack
+      package: binary-buildpack
+    default_health_check_timeout: 60
+    default_quota_definition: default
+    default_running_security_groups:
+    - public_networks
+    - dns
+    - services
+    - load_balancer
+    - user_bosh_deployments
+    default_staging_security_groups:
+    - public_networks
+    - dns
+    - services
+    - load_balancer
+    - user_bosh_deployments
+    default_to_diego_backend: true
+    development_mode: false
+    directories: null
+    disable_custom_buildpacks: false
+    droplets:
+      .: (( inject meta.cf.blobstore_config ))
+      droplet_directory_key: (( concat meta.cf.base_domain "-cc-droplets" ))
+      max_staged_droplets_stored: null
+    external_host: api
+    external_port: 9022
+    external_protocol: null
+    install_buildpacks:
+    - name: staticfile_buildpack
+      package: staticfile-buildpack
+    - name: java_buildpack
+      package: buildpack_java
+    - name: ruby_buildpack
+      package: ruby-buildpack
+    - name: nodejs_buildpack
+      package: nodejs-buildpack
+    - name: go_buildpack
+      package: go-buildpack
+    - name: python_buildpack
+      package: python-buildpack
+    - name: php_buildpack
+      package: php-buildpack
+    - name: binary_buildpack
+      package: binary-buildpack
+    internal_api_password: (( grab meta.cf.creds.cc.internal_api_password ))
+    internal_api_user: (( grab meta.cf.creds.cc.internal_api_user ))
+    jobs:
+      app_bits_packer:
+        timeout_in_seconds: null
+      app_events_cleanup:
+        timeout_in_seconds: null
+      app_usage_events_cleanup:
+        timeout_in_seconds: null
+      blobstore_delete:
+        timeout_in_seconds: null
+      blobstore_upload:
+        timeout_in_seconds: null
+      droplet_deletion:
+        timeout_in_seconds: null
+      droplet_upload:
+        timeout_in_seconds: null
+      generic:
+        number_of_workers: null
+      global:
+        timeout_in_seconds: 14400
+    logging_level: debug2
+    maximum_app_disk_in_mb: 2048
+    maximum_health_check_timeout: 180
+    min_cli_version: null
+    min_recommended_cli_version: null
+    minimum_candidate_stagers: null
+    newrelic:
+      capture_params: false
+      developer_mode: false
+      environment_name: cf-warden
+      license_key: null
+      monitor_mode: false
+      transaction_tracer:
+        enabled: true
+        record_sql: obfuscated
+    packages:
+      .: (( inject meta.cf.blobstore_config ))
+      app_package_directory_key: (( concat meta.cf.base_domain "-cc-packages" ))
+      max_package_size: 1073741824
+      max_valid_packages_stored: null
+    quota_definitions:
+      default:
+        memory_limit: 10240
+        non_basic_services_allowed: true
+        total_reserved_route_ports: -1
+        total_routes: 1000
+        total_service_keys: 1000
+        total_services: 100
+    reserved_private_domains: null
+    resource_pool:
+      .: (( inject meta.cf.blobstore_config ))
+      resource_directory_key: (( concat meta.cf.base_domain "-cc-resources" ))
+    security_event_logging:
+      enabled: null
+    security_group_definitions:
+    - name: public_networks
+      rules:
+      - destination: 0.0.0.0-9.255.255.255
+        protocol: all
+      - destination: 11.0.0.0-169.253.255.255
+        protocol: all
+      - destination: 169.255.0.0-172.15.255.255
+        protocol: all
+      - destination: 172.32.0.0-192.167.255.255
+        protocol: all
+      - destination: 192.169.0.0-255.255.255.255
+        protocol: all
+    - name: dns
+      rules:
+      - destination: 0.0.0.0/0
+        ports: "53"
+        protocol: tcp
+      - destination: 0.0.0.0/0
+        ports: "53"
+        protocol: udp
+    - name: services
+      rules: (( param "Specify the rules for allowing access to CF services subnets" ))
+    - name: load_balancer
+      rules: (( param "Specify the rules for allowing access for CF apps to talk to the CF Load Balancer External IPs" ))
+    - name: user_bosh_deployments
+      rules: (( param "Specify the rules for additional BOSH user services that apps will need to talk to" ))
+    service_usage_events:
+      cutoff_age_in_days: 31
+    srv_api_uri: (( concat "https://api." meta.cf.system_domain ))
+    stacks: null
+    staging_upload_password: (( grab meta.cf.creds.cc.staging_upload_password ))
+    staging_upload_user: (( grab meta.cf.creds.cc.staging_upload_user ))
+    system_buildpacks:
+    - name: staticfile_buildpack
+      package: staticfile-buildpack
+    - name: java_buildpack
+      package: buildpack_java
+    - name: ruby_buildpack
+      package: ruby-buildpack
+    - name: nodejs_buildpack
+      package: nodejs-buildpack
+    - name: go_buildpack
+      package: go-buildpack
+    - name: python_buildpack
+      package: python-buildpack
+    - name: php_buildpack
+      package: php-buildpack
+    - name: binary_buildpack
+      package: binary-buildpack
+    system_hostnames: null
+    thresholds:
+      api:
+        alert_if_above_mb: null
+        restart_if_above_mb: null
+        restart_if_consistently_above_mb: null
+      worker:
+        alert_if_above_mb: null
+        restart_if_above_mb: null
+        restart_if_consistently_above_mb: null
+    user_buildpacks: []
+    users_can_select_backend: true
+    volume_services_enabled: true
+    webdav_config: (( grab meta.cf.blobstore_config.webdav_config ))
+  ccdb:
+    address: (( grab meta.cf.ccdb.host ))
+    databases:
+    - citext: true
+      name: (( grab meta.cf.ccdb.dbname ))
+      tag: cc
+    db_scheme: (( grab meta.cf.ccdb.scheme ))
+    port: (( grab meta.cf.ccdb.port ))
+    roles:
+    - name: (( grab meta.cf.ccdb.user ))
+      password: (( grab meta.cf.ccdb.pass ))
+      tag: admin
+  collector: null
+  consul:
+    agent:
+      datacenter: null
+      domain: cf.internal
+      log_level: null
+      servers:
+        lan: (( grab meta.cf.consul.servers ))
+    agent_cert: (( grab meta.cf.consul.agent_cert ))
+    agent_key: (( grab meta.cf.consul.agent_key ))
+    ca_cert: (( grab meta.cf.consul.ca_cert ))
+    encrypt_keys:
+    - (( grab meta.cf.consul.encryption_key ))
+    server_cert: (( grab meta.cf.consul.server_cert ))
+    server_key: (( grab meta.cf.consul.server_key ))
+  description: null
+  disk_quota_enabled: false
+  domain: (( grab meta.cf.base_domain ))
+  doppler:
+    blacklisted_syslog_ranges: null
+    debug: false
+    maxRetainedLogMessages: 100
+    message_drain_buffer_size: null
+    port: 4443
+    etcd:
+      client_cert: null
+      client_key:  null
+    tls:
+      enable: null
+      port: null
+      server_cert: null
+      server_key: null
+    unmarshaller_count: 5
+    zone: null
+  doppler_endpoint:
+    shared_secret: (( grab meta.cf.creds.loggregator.endpoint_secret ))
+  dropsonde:
+    enabled: true
+  etcd:
+    machines: (( grab meta.cf.etcd.servers ))
+  etcd_metrics_server:
+    nats:
+      machines: (( grab meta.cf.nats.servers ))
+      password: (( grab meta.cf.nats.pass ))
+      username: (( grab meta.cf.nats.user ))
+  ha_proxy: null
+  logger_endpoint: null
+  loggregator:
+    dropsonde_incoming_port: null
+    blacklisted_syslog_ranges: null
+    debug: false
+    etcd:
+      ca_cert: null
+      machines: (( grab meta.cf.etcd.servers ))
+      client_cert: null
+      client_key: null
+      require_ssl: null
+    maxRetainedLogMessages: 100
+    outgoing_dropsonde_port: 8081
+    tls:
+      ca_cert: null
+    dropsonde_incoming_port: null
+  loggregator_endpoint:
+    shared_secret: (( grab meta.cf.creds.loggregator.endpoint_secret ))
+  login:
+    analytics:
+      code: null
+      domain: null
+    asset_base_url: null
+    brand: oss
+    catalina_opts: null
+    enabled: true
+    invitations_enabled: null
+    links:
+      passwd: (( concat "https://login." meta.cf.system_domain "/forgot_password" ))
+      signup: (( concat "https://login." meta.cf.system_domain "/create_account" ))
+    logout: null
+    messages: null
+    notifications:
+      url: null
+    protocol: null
+    restricted_ips_regex: null
+    saml: null
+    self_service_links_enabled: null
+    signups_enabled: null
+    smtp:
+      host: null
+      password: null
+      port: null
+      user: null
+    spring_profiles: null
+    tiles: null
+    uaa_base: null
+    url: null
+  metron_agent:
+    buffer_size: null
+    deployment: (( grab name ))
+    dropsonde_incoming_port: null
+    enable_buffer: null
+    etcd:
+      client_cert: null
+      client_key: null
+    preferred_protocol: null
+    protocols: null
+    tls:
+      client_cert: null
+      client_key: null
+  metron_endpoint:
+    shared_secret: (( grab meta.cf.creds.loggregator.endpoint_secret ))
+  nats:
+    debug: false
+    machines: (( grab meta.cf.nats.servers ))
+    monitor_port: 4221
+    password: (( grab meta.cf.nats.pass ))
+    port: 4222
+    prof_port: 0
+    trace: false
+    user: (( grab meta.cf.nats.user ))
+  nfs_server: (( param "Set the nfs_server properties, if using NFS as the blobstore" ))
+  request_timeout_in_seconds: 900
+  router:
+    cipher_suites: null
+    debug_address: null
+    drain_wait: null
+    enable_access_log_streaming: null
+    enable_proxy: null
+    enable_ssl: null
+    extra_headers_to_log: null
+    logrotate: null
+    port: null
+    requested_route_registration_interval_in_seconds: null
+    route_services_recommend_https: false
+    route_services_secret: (( grab meta.cf.creds.gorouter.route_svcs_secret ))
+    route_services_secret_decrypt_only: null
+    route_services_timeout: null
+    secure_cookies: null
+    ssl_cert: null
+    ssl_key: null
+    ssl_skip_validation: true
+    status:
+      password: (( grab meta.cf.creds.gorouter.status_pass ))
+      port: null
+      user: (( grab meta.cf.creds.gorouter.status_user ))
+  routing_api:
+    enabled: null
+  smoke_tests:
+    api: (( concat "https://api." meta.cf.system_domain ))
+    apps_domain: (( grab meta.cf.apps_domains.0 ))
+    ginkgo_opts: null
+    org: SMOKE_TEST_ORG
+    password: (( grab meta.cf.creds.admin.pass ))
+    skip_ssl_validation: (( grab meta.skip_ssl_validation ))
+    space: SMOKE_TEST_SPACE
+    user: (( grab meta.cf.creds.admin.user ))
+  ssl:
+    skip_cert_verify: (( grab meta.skip_ssl_validation ))
+  support_address: http://support.cloudfoundry.com
+  syslog_daemon_config: null
+  system_domain: (( grab meta.cf.system_domain ))
+  system_domain_organization: system
+  traffic_controller:
+    disable_access_control: null
+    outgoing_port: 8080
+    security_event_logging:
+      enabled: false
+    zone: null
+  uaa:
+    admin:
+      client_secret: (( grab meta.cf.creds.uaa.admin_client_secret ))
+    authentication:
+      policy:
+        countFailuresWithinSeconds: null
+        lockoutAfterFailures: null
+        lockoutPeriodSeconds: null
+    ca_cert: null
+    catalina_opts: -Xmx192m -XX:MaxPermSize=128m
+    cc:
+      client_secret: (( grab meta.cf.creds.uaa.cc_client_secret ))
+    clients:
+      clients:
+        opentsdb-firehose-nozzle:
+          access-token-validity: 1209600
+          authorized-grant-types: authorization_code,client_credentials,refresh_token
+          override: true
+          secret: (( grab meta.cf.creds.uaa.opentsdb_firehose_secret ))
+          scope: openid,oauth.approvals,doppler.firehose
+          authorities: oauth.login,doppler.firehose
+        identity:
+          id: identity
+          secret: (( grab meta.cf.creds.uaa.identity_secret ))
+          scope: "cloud_controller.admin,cloud_controller.read,cloud_controller.write,openid,zones.*.*,zones.*.*.*,zones.read,zones.write,scim.read"
+          resource_ids: none
+          override: true
+          authorized-grant-types: "authorization_code,client_credentials,refresh_token"
+          autoapprove: true
+          authorities: "scim.zones,zones.read,uaa.resource,zones.write,cloud_controller.admin,uaa.admin"
+          redirect-uri: (( concat "https://p-identity." meta.cf.system_domain "/dashboard/,https://p-identity." meta.cf.system_domain "/dashboard/**" ))
+        login:
+          id: login
+          secret: (( grab meta.cf.creds.uaa.login_secret ))
+          override: true
+          autoapprove: true
+          authorities: "oauth.login,scim.write,clients.read,notifications.write,critical_notifications.write,emails.write,scim.userids,password.write"
+          authorized-grant-types: "authorization_code,client_credentials,refresh_token"
+          scope: "openid,oauth.approvals"
+        portal:
+          id: portal
+          secret: (( grab meta.cf.creds.uaa.portal_secret ))
+          override: true
+          autoapprove: true
+          authorities: "scim.write,scim.read,cloud_controller.read,cloud_controller.write,password.write,uaa.admin,uaa.resource,cloud_controller.admin,emails.write,notifications.write"
+          authorized-grant-types: "authorization_code,client_credentials,password,implicit"
+          scope: "openid,cloud_controller.read,cloud_controller.write,password.write,console.admin,console.support,cloud_controller.admin"
+          access-token-validity: 1209600
+          refresh-token-validity: 1209600
+          name: Pivotal Apps Manager
+          app-launch-url: (( concat "https://apps." meta.cf.system_domain ))
+          show-on-homepage: true
+          app-icon: iVBORw0KGgoAAAANSUhEUgAAAGwAAABsCAYAAACPZlfNAAAAAXNSR0IArs4c6QAABYtJREFUeAHtnVtsFFUYx7/d3ruWotUKVIkNaCw02YgJGBRTMd4CokUejD4QH4gxQcIDeHnBmPjkhSghUYLGe3ywPtAHNCo0QgkWwi2tXG2V1kIpLXTbLt1tS9dzlmzSJssZhv32zDk7/2km2znn7Pd9+/vt2Z2dmW0D9Obat4gCiwiLBQQSLflSViAQeN6Can1fYiJBFPQ9BcsAQBiEWUbAsnIxwyDMMgKWlYsZBmGWEbCsXMwwCLOMgGXlYoZBmGUELCsXMwzCLCNgWbmYYRBmGQHLysUMgzDLCFhWLmYYhFlGwLJyMcMgzDIClpWLGQZhlhGwrFzMMAizjIBl5WKGQZhlBCwrV1xbb96y59V1VFJQmLawQNrWa43x8XEaHo1fW+Oj1H8lSqf6eulEbw+dvNhLvcNDinvb0WWksAdm3UWhwiJ2gt2RAWo80UY7jrdSU8cZGrt6lT1HtgMaKSxbD7qqfDq99tAjyTUSG6FP9v1BH+3dTUPxeLZSssf17U5HeXEJbXr8aerY+A6tf7iOxFeu2OFmI6BvhaVgVoRCtHl5PTW8/AoV5xekmo299b2wlJn6+WFqWrOWKkpDqSYjbyFskpZFs++hL1e9NKnFvF+t3OmQOwzdkcgUmnnBABXm5Ys1j8qKisVadFPvS8tramn1goX09eEDU+KbsmGlsMbjbbT6x++UDOVORGXoFppXOYMerLqbVsyrpcWzqykYdH5R+fjZlcnd/8sjV5Q5vOh0rt6LqhhyJsQ3uC+ID8ry89aHYtf90W1bKLzlffr19EnH6HIP8oXasOM4LwbkrLB0MP+6cJ6e+eoz+vTP5nTdU9peDC+Ysm3Khq+ESehy5r3e2ECHu7uUDuqq59Id4iXVtMV3wqSACSHt3V2/KF3I97qayjuVY7zo9KUwCfq3M6coNjamZD6zrFzZ70Wnb4XFxseoK3JZyXzWtGnKfi86fStMwu6LRpXMZ5RBmBKQ7k75XqZa8gLmPZ/Nq0hFkLnvttJSZUT5Oc60xbfC5CGs6lsrlD56hgaV/V50+lbYkuo5VFygPp3SMwxhXjwp0+bcsGRp2vZU48TEBB09153aNObWlzNMHo1/6r4apYTmsx10MTqsHONFp5VH6zMBtWbhYtq6YpVjiJ/ajjmO8WKAL4QFxamWZffPT1678dicex05D4jTKj8cO+Q4zosBOSXs7bonktci5ovjgPIUye3ieo3wzKrk+TC5faPLGz83On6ovtFY3ONySth7Ty67qbPMk6Hu+edv+vzg/slNRv3uy52O6xk40HWW6r/94nrdRrTn1AzLhOju9tP03DfbKTo6mkmYrN/X98L6xQHgTb/vpG0t+5LnybJOPMMEvhXWOXCJvj9yiD7Yu4sGRkYyxKjv7r4RJi+Na+05Rwf/66SG1qO0v/NffZQZM+WUsI07d1BC/MTE144GYzHxJYcYDYq1vb/f8WQlI9OshsopYZubm7IKy4Tg2K03wYKLGiDMBSwThkKYCRZc1ABhLmCZMBTCTLDgogYIcwHLhKEQZoIFFzVAmAtYJgyFMBMsuKgBwlzAMmEohJlgwUUNEOYClglDIcwECy5qgDAXsEwYCmEmWHBRA4S5gGXCUAgzwYKLGow84yyvuyhR/GW19kt9Lh5ibg01UtjS7VtzizLjo8FLIiNMHaEgTAdlxhwQxghTRygI00GZMQeEMcLUEQrCdFBmzAFhjDB1hIIwHZQZc0AYI0wdoSBMB2XGHBDGCFNHKAjTQZkxB4QxwtQRCsJ0UGbMAWGMMHWEgjAdlBlzQBgjTB2hIEwHZcYcEMYIU0coCNNBmTEHhDHC1BEKwnRQZswBYYwwdYSCMB2UGXNAGCNMHaEgTAdlxhziUu1Ei8M/+WFMh1CZEUi0/A+j7hNSB5Wo2wAAAABJRU5ErkJggg==
+        apps_manager_js:
+          override: true
+          autoapprove:
+            - cloud_controller.read
+            - cloud_controller.write
+            - cloud_controller.admin
+          scope: cloud_controller.read,cloud_controller.write,cloud_controller.admin
+          authorized-grant-types: implicit
+          access-token-validity: 28800
+        usage_service:
+          id: usage_service
+          secret: (( grab meta.cf.cres.uaa.usage_service_secret ))
+          override: true
+          authorities: "cloud_controller.read,uaa.resource,cloud_controller.admin"
+          authorized-grant-types: "client_credentials"
+        invitations:
+          id: invitations
+          secret: (( grab meta.cf.creds.uaa.invitations_secret ))
+          scope: uaa.none
+          authorized-grant-types: client_credentials
+          authorities: emails.write,cloud_controller.read,cloud_controller.write,uaa.resource,scim.invite,notifications.write,cloud_controller.admin
+        cf:
+          id: cf
+          override: true
+          authorities: "uaa.none"
+          authorized-grant-types: "password,refresh_token"
+          scope: "cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,scim.read,scim.write,doppler.firehose,uaa.user,routing.router_groups.read,routing.router_groups.write"
+          access-token-validity: 7200
+          refresh-token-validity: 1209600
+        autoscaling_service:
+          id: autoscaling_service
+          secret: (( grab meta.cf.creds.uaa.autoscaler_client_secret ))
+          override: true
+          autoapprove: true
+          authorities: "cloud_controller.write,cloud_controller.read,cloud_controller.admin,notifications.write,critical_notifications.write,emails.write"
+          authorized-grant-types: "client_credentials,authorization_code,refresh_token"
+          scope: "openid,cloud_controller.permissions,cloud_controller.read,cloud_controller.write"
+          access-token-validity: 3600
+        system_passwords:
+          id: system_passwords
+          secret: (( grab meta.cf.creds.uaa.system_passwords_secret ))
+          override: true
+          autoapprove: true
+          authorities: "uaa.admin,scim.read,scim.write,password.write"
+          authorized-grant-types: "client_credentials"
+        cc-service-dashboards:
+          id: cc-service-dashboards
+          secret: (( grab meta.cf.creds.uaa.cc_service_dashboards_secret ))
+          override: true
+          authorities: clients.read,clients.write,clients.admin
+          authorized-grant-types: client_credentials
+          scope: cloud_controller.write,openid,cloud_controller.read,cloud_controller_service_permissions.read
+        doppler:
+          id: doppler
+          secret: (( grab meta.cf.creds.uaa.doppler_secret ))
+          authorities: uaa.resource
+        gorouter:
+          id: gorouter
+          secret: (( grab meta.cf.creds.uaa.gorouter_secret ))
+          authorities: clients.read,clients.write,clients.admin,routing.routes.write,routing.routes.read
+          authorized-grant-types: client_credentials,refresh_token
+          scope: openid,cloud_controller_service_permissions.read
+        notifications:
+          id: notifications
+          secret: (( grab meta.cf.creds.uaa.notifications_secret ))
+          authorities: cloud_controller.admin,scim.read,notifications.write,critical_notifications.write,emails.write
+          authorized-grant-types: client_credentials
+        notifications_template:
+          id: notifications_template
+          secret: (( grab meta.cf.creds.uaa.notifications_template_secret ))
+          scope: openid,clients.read,clients.write,clients.secret
+          authorities: clients.read,clients.write,clients.secret,notification_templates.write,notification_templates.read,notifications.manage
+          authorized-grant-types: client_credentials
+        notifications_ui_client:
+          id: notifications_ui_client
+          secret: (( grab meta.cf.creds.uaa.notifications_ui_client_secret ))
+          scope: notification_preferences.read,notification_preferences.write,openid
+          authorized-grant-types: authorization_code,client_credentials,refresh_token
+          authorities: notification_preferences.admin
+          autoapprove: true
+          override: true
+          redirect-uri: (( concat "https://notifications-ui." meta.cf.system_domain "/sessions/create" ))
+        cloud_controller_username_lookup:
+          id: cloud_controller_username_lookup
+          secret: (( grab meta.cf.creds.uaa.cc_user_lookup_secret ))
+          authorized-grant-types: client_credentials
+          authorities: scim.userids
+        cc_routing_credentials:
+          authorities: routing.router_groups.read
+          authorized-grant-types: client_credentials
+          secret: (( grab meta.cf.creds.uaa.cc_routing_secret ))
+        ssh-proxy:
+          authorized-grant-types: authorization_code
+          autoapprove: true
+          override: true
+          redirect-uri: /login
+          scope: openid,cloud_controller.read,cloud_controller.write,cloud_controller.admin
+          secret: (( grab meta.cf.creds.uaa.ssh_proxy_secret ))
+        apps_metrics:
+          id: apps_metrics
+          secret: (( grab meta.cf.creds.uaa.apps_metrics_secret ))
+          override: true
+          authorized-grant-types: authorization_code,refresh_token
+          redirect-uri: (( concat "https://apm." meta.cf.system_domain ",https://apm." meta.cf.system_domain "/,https://apm." meta.cf.system_domain "/*,https://metrics." meta.cf.system_domain ",https://metrics." meta.cf.system_domain "/,https://metrics." meta.cf.system_domain "/*" ))
+          authorities: uaa.resource
+          scope: cloud_controller.admin,cloud_controller.read,metrics.read
+          access-token-validity: 900
+          refresh-token-validity: 2628000
+        apps_metrics_processing:
+          id: apps_metrics_processing
+          secret: (( grab meta.cf.creds.uaa.apps_metrics_processing_secret ))
+          override: true
+          authorized-grant-types: authorization_code,client_credentials,refresh_token
+          authorities: oauth.login,doppler.firehose,cloud_controller.admin,uaa.resource
+          scope: openid,oauth.approvals,doppler.firehose,cloud_controller.admin
+          access-token-validity: 1209600
+        tcp_router:
+          id: tcp_route
+          secret: (( grab meta.cf.creds.uaa.tcp_router_secret ))
+          override: true
+          authorized-grant-types: client_credentials,refresh_token
+          authorities: routing.routes.read,routing.router_groups.read
+          scope: routing.routes.read,routing.router_groups.read
+          access-token-validity: 1209600
+        tcp_emitter:
+          id: tcp_emitter
+          secret: (( grab meta.cf.creds.uaa.tcp_emitter_secret ))
+          override: true
+          authorized-grant-types: client_credentials,refresh_token
+          authorities: routing.routes.write,routing.routes.read,routing.router_groups.read
+          scope: routing.routes.write,routing.routes.read,routing.router_groups.read
+          access-token-validity: 1209600
+        pivotal_account:
+          id: pivotal_account
+          secret: (( grab meta.cf.creds.uaa.pivotal_account_secret ))
+          scope: openid,password.write,oauth.approvals
+          authorities: uaa.resource,idps.read,clients.read,scim.read,scim.create,scim.write,emails.write,oauth.login
+          authorized-grant-types: "authorization_code,client_credentials,refresh_token"
+          access-token-validity: 1209600
+          refresh-token-validity: 1209600
+          autoapprove: true
+          override: true
+          redirect-uri: (( concat "https://account." meta.cf.system_domain "/sign-in,https://account." meta.cf.system_domain "/identity/,https://account." meta.cf.system_domain "/**" ))
+        concourse_atc:
+          id: concourse_atc
+          secret: (( grab meta.cf.creds.uaa.concourse_atc_secret ))
+          scope: cloud_controller.read
+          authorities: cloud_controller.admin
+          authorized-grant-types: "authorization_code,client_credentials,refresh_token"
+          access-token-validity: 3600
+          refresh-token-validity: 3600
+          autoapprove: true
+          override: true
+          redirect-uri: (( concat "https://p-concourse." meta.cf.system_domain "/auth/uaa/callback" ))
+        push-notifications-dashboard:
+          id: push-notifications-dashboard
+          secret: (( grab meta.cf.creds.uaa.push_notifications_secret ))
+          scope: cloud_controller.read,cloud_controller.write,openid
+          authorities: scim.read
+          authorized-grant-types: "refresh_token,client_credentials,authorization_code"
+          access-token-validity: 3600
+          autoapprove: true
+          redirect-uri: (( concat "https://push." meta.cf.system_domain "/auth/cloudfoundry/callback" ))
+        push-api:
+          id: push-api
+          secret: (( grab meta.cf.creds.uaa.push_api_secret ))
+          scope: uaa.none
+          authorities: uaa.resource
+          authorized-grant-types: client_credentials
+        greenplum_broker:
+          id: greenplum_broker
+          secret: (( grab meta.cf.creds.uaa.greenplum_broker_secret ))
+          scope: "uaa.none"
+          authorities: "cloud_controller.read"
+          authorized-grant-types: "refresh_token,client_credentials"
+        greenplum_router_admin:
+          id: greenplumb_router_admin
+          secret: (( grab meta.cf.creds.uaa.greenplum_router_admin_secret ))
+          scope: "uaa.none"
+          authorities: "cloud_controller.admin,routing.router_groups.read"
+          authorized-grant-types: "refresh_token,client_credentials"
+        greenplum_router:
+          id: greenplumb_router
+          secret: (( grab meta.cf.creds.uaa.greenplum_router_secret ))
+          scope: "uaa.none"
+          authorities: "routing.routes.write"
+          authorized-grant-types: "refresh_token,client_credentials"
+    database: null
+    issuer: (( concat "https://uaa." meta.cf.system_domain ))
+    jwt:
+      signing_key: (( grab meta.cf.uaa.jwt_private_key ))
+      verification_key: (( grab meta.cf.uaa.jwt_public_key ))
+    ldap: null
+    login: null
+    newrelic: null
+    no_ssl: null
+    port: 8080
+    require_https: true
+    restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
+    scim:
+      external_groups: null
+      groups: null
+      userids_enabled: true
+      users:
+      - (( concat meta.cf.creds.admin.user "|" meta.cf.creds.admin.pass "|scim.write,scim.read,openid,cloud_controller.admin,clients.read,clients.write,doppler.firehose,routing.router_groups.read" ))
+    spring_profiles: null
+    ssl:
+      port: 8443
+    sslCertificate: (( grab meta.cf.uaa.ssl_cert ))
+    sslPrivateKey: (( grab meta.cf.uaa.ssl_key ))
+    url: (( concat "https://uaa." meta.cf.system_domain ))
+    user: null
+    zones:
+      internal:
+        hostnames:
+        - uaa.service.cf.internal
+  uaadb:
+    address: (( grab meta.cf.uaadb.host ))
+    databases:
+    - citext: true
+      name: (( grab meta.cf.uaadb.dbname ))
+      tag: uaa
+    db_scheme: (( grab meta.cf.uaadb.scheme ))
+    port: (( grab meta.cf.uaadb.port ))
+    roles:
+    - name: (( grab meta.cf.uaadb.user ))
+      password: (( grab meta.cf.uaadb.pass ))
+      tag: admin
+  capi:
+    cc_uploader:
+      dropsonde_port: null
+      log_level: null
+    nsync:
+      bbs: (( grab meta.cf.bbs ))
+      cc:
+        base_url: (( concat "https://api." meta.cf.system_domain ))
+        basic_auth_password: (( grab meta.cf.creds.cc.internal_api_password ))
+        basic_auth_username: (( grab meta.cf.creds.cc.internal_api_user ))
+      diego_privileged_containers: null
+      dropsonde_port: null
+      log_level: debug
+    stager:
+      bbs: (( grab meta.cf.bbs ))
+      cc:
+        basic_auth_password: (( grab meta.cf.creds.cc.internal_api_password ))
+        basic_auth_username: (( grab meta.cf.creds.cc.internal_api_user ))
+      diego_privileged_containers: null
+      dropsonde_port: null
+      insecure_docker_registry_list: null
+      log_level: debug
+    tps:
+      bbs: (( grab meta.cf.bbs ))
+      cc:
+        basic_auth_password: (( grab meta.cf.creds.cc.internal_api_password ))
+        basic_auth_username: (( grab meta.cf.creds.cc.internal_api_user ))
+      dropsonde_port: null
+      log_level: null
+      traffic_controller_url: (( concat "wss://doppler." meta.cf.system_domain ":443" ))
+  cflinuxfs2-rootfs:
+    trusted_certs: null
+  diego:
+    auctioneer:
+      bbs: (( grab meta.cf.bbs ))
+      cell_state_timeout: null
+      dropsonde_port: null
+      log_level: null
+      starting_container_weight: null
+    bbs:
+      active_key_label: key1
+      auctioneer:
+        api_url: null
+      ca_cert: (( grab meta.cf.bbs.ca_cert ))
+      convergence:
+        expire_completed_task_duration_in_seconds: null
+        expire_pending_task_duration_in_seconds: null
+        kick_task_duration_in_seconds: null
+        repeat_interval_in_seconds: null
+      dropsonde_port: null
+      enable_access_log: true
+      encryption_keys:
+      - label: key1
+        passphrase: (( grab meta.cf.creds.diego.encryption_key ))
+      etcd:
+        ca_cert: (( grab meta.cf.bbs.ca_cert ))
+        client_cert: (( grab meta.cf.bbs.client_cert ))
+        client_key: (( grab meta.cf.bbs.client_key ))
+        client_session_cache_size: null
+        machines:
+        - etcd.service.cf.internal
+        max_idle_conns_per_host: null
+        require_ssl: true
+      log_level: null
+      require_ssl: true
+      server_cert: (( grab meta.cf.bbs.server_cert ))
+      server_key: (( grab meta.cf.bbs.server_key ))
+      sql:
+        ca_cert: null
+        db_connection_string: (( concat meta.cf.diegodb.scheme "://" meta.cf.diegodb.user ":" meta.cf.diegodb.pass "@" meta.cf.diegodb.host ":" meta.cf.diegodb.port "/" meta.cf.diegodb.dbname ))
+        db_driver: (( grab meta.cf.diegodb.scheme ))
+        max_open_connections: 500
+        require_ssl: null
+    executor:
+      ca_certs_for_downloads: null
+      container_metrics_report_interval: null
+      disk_capacity_mb: null
+      drain_timeout_in_seconds: 0
+      garden:
+        address: 127.0.0.1:7777
+        network: tcp
+      garden_healthcheck:
+        command_retry_pause: null
+        interval: null
+        process:
+          args: null
+          dir: null
+          env: null
+          path: null
+          user: null
+        timeout: null
+      log_level: debug
+      max_cache_size_in_bytes: null
+      memory_capacity_mb: null
+      post_setup_hook: null
+      post_setup_user: null
+    file_server:
+      dropsonde_port: null
+      log_level: null
+    cfdot:
+      bbs: (( grab meta.cf.bbs ))
+    rep:
+      bbs: (( grab meta.cf.bbs ))
+      dropsonde_port: null
+      evacuation_timeout_in_seconds: 60
+      log_level: debug
+      preloaded_rootfses:
+      - cflinuxfs2:/var/vcap/packages/cflinuxfs2/rootfs
+      trusted_certs: null
+    route_emitter:
+      bbs: (( grab meta.cf.bbs ))
+      dropsonde_port: null
+      log_level: debug
+      nats:
+        machines: (( grab meta.cf.nats.servers ))
+        password: (( grab meta.cf.nats.pass ))
+        user:     (( grab meta.cf.nats.user ))
+        port: 4222
+    ssh_proxy:
+      bbs: (( grab meta.cf.bbs ))
+      diego_credentials: (( grab meta.cf.creds.diego.secret ))
+      dropsonde_port: null
+      enable_cf_auth: true
+      enable_diego_auth: true
+      host_key: (( vault meta.vault_prefix "/app_ssh:private" ))
+      uaa_secret: (( grab meta.cf.creds.uaa.ssh_proxy_secret ))
+      uaa_token_url: (( concat "https://uaa." meta.cf.system_domain "/oauth/token" ))
+    ssl:
+      skip_cert_verify: (( grab meta.skip_ssl_validation ))
+  garden:
+    allow_host_access: null
+    allow_networks: null
+    default_container_grace_time: 0
+    deny_networks:
+    - 0.0.0.0/0
+    destroy_containers_on_start: true
+    disk_quota_enabled: null
+    graph_cleanup_threshold_in_mb: 0
+    insecure_docker_registry_list: null
+    listen_address: 0.0.0.0:7777
+    listen_network: tcp
+    log_level: debug
+    network_mtu: null
+    persistent_image_list:
+    - /var/vcap/packages/cflinuxfs2/rootfs
+  syslog_drain_binder:
+    etcd:
+      client_cert: null
+      client_key:  null
+  autoscale:
+    cf:
+      admin_user: (( grab meta.cf.creds.admin.user ))
+      admin_password: (( grab meta.cf.creds.admin.pass ))
+    broker:
+      user: (( grab meta.cf.creds.autoscale_broker.user ))
+      password: (( grab meta.cf.creds.autoscale_broker.password ))
+    organization: system
+    space: autoscaling
+    database:
+      url: (( param "Set your database URL for the autoscaling service" ))
+    encryption_key: (( grab meta.cf.creds.autoscale_broker.encryption_key ))
+    enable_diego: true
+    notifications_host: (( concat "https://notifications." meta.cf.system_domain ))
+  notifications_ui:
+    organization: system
+    space: notifications-with-ui
+    app_domain: (( grab meta.cf.system.domain ))
+    network: notifications
+    syslog_url: ~
+    encrpytion_key: (( grab meta.cf.creds.notifications_ui.encryption_key ))
+    enable_diego: true
+    instance_count: 1
+    cf:
+      admin_user: (( grab meta.cf.creds.admin.user ))
+      admin_password: (( grab meta.cf.creds.admin.pass ))
+    uaa:
+      client_id: notifications
+      client_secret: (( grab properties.uaa.clients.notifications_ui_client.secret ))
+      admin_client_id: admin
+      admin_client_secret: (( grab properties.uaa.admin.client_secret ))
+  notifications:
+    cf:
+      admin_user: (( grab meta.cf.creds.admin.user ))
+      admin_password: (( grab meta.cf.creds.admin.pass ))
+      app_domain: (( grab meta.cf.system_domain ))
+    organization: systems
+    space: notifications-with-ui
+    encryption_key: (( grab meta.cf.creds.notifications.encryption_key)
+    enable_diego: true
+    instance_count: 3
+    syslog_url: ~
+    sender: notifications
+    network: notifications
+    smtp:
+      host: (( param "What host will your SMTP notifications go out through?" ))
+      password: (( param "What is the password used for sending SMTP notifications?" ))
+      port: (( param "What port is your SMTP server listening on?" ))
+      user: (( param "What is the user used for sending SMTP notifications?" ))
+      tls: true
+      auth_mechanism: plain
+      crammd5_secret: ~
+    uaa:
+      client_id: notifications
+      client_secret: (( grab properties.uaa.clients.notifications.secret ))
+      admin_client_id: admin
+      admin_client_secret: (( grab properties.uaa.admin.client_secret ))
+    database:
+      url: (( param "Set your database URL for the notifications service" ))
+      max_open_connections: 10
+    default_template: |
+      {
+        "name": "Default Template",
+        "subject": "CF Notification: {{.Subject}}",
+        "html": "\u003ctable width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse;font-family: Helvetica, Arial,sans-serif\"\u003e\n    \u003ctbody\u003e\n        \u003ctr\u003e\n            \u003ctd width=\"100%\" align=\"center\" bgcolor=\"#F8f8f8\" style=\"padding-right:10px;padding-left:10px\"\u003e\n                \u003ctable width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse\"\u003e\n                    \u003ctbody\u003e\n                        \u003ctr\u003e\n                            \u003ctd align=\"left\" valign=\"top\" style=\"padding-bottom:30px;padding-top:30px\"\u003e\n                              \u003cimg src=\"http://notifications-ui.{{.Domain}}/assets/pivotal_logo.png\"\n                                alt=\"Pivotal CF\" border=\"0\" style=\"display:block\" class=\"CToWUd\"\n                                width=\"166px\" height=\"35px\"\u003e\n                            \u003c/td\u003e\n                        \u003c/tr\u003e\n                    \u003c/tbody\u003e\n                \u003c/table\u003e\n                \u003ctable width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse\"\u003e\n                    \u003ctbody\u003e\n                        \u003ctr\u003e\n                            \u003ctd align=\"left\" valign=\"top\" bgcolor=\"#FFFFFF\"\u003e\n                                \u003ctable width=\"600\" cellpadding=\"40\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse;border:1px solid #e0e4e5\"\u003e\n                                    \u003ctbody\u003e\n                                        \u003ctr\u003e\n                                            \u003ctd style=\"color:#666666;font-size:16px;line-height:22px\"\u003e\n                                                \u003cdiv\u003e\n                                                    {{.HTML}}\n                                                \u003c/div\u003e\n                                            \u003c/td\u003e\n                                        \u003c/tr\u003e\n                                    \u003c/tbody\u003e\n                                \u003c/table\u003e\n                            \u003c/td\u003e\n                        \u003c/tr\u003e\n                    \u003c/tbody\u003e\n                \u003c/table\u003e\n                \u003ctable width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse;font-size:12px;color:#b4b4b4\"\u003e\n                    \u003ctbody\u003e\n                        \u003ctr\u003e\n                          \u003ctd align=\"left\" valign=\"middle\" style=\"padding-top:20px;padding-bottom:20px\"\u003eManage your \u003ca href=\"https://notifications-ui.{{.Domain}}/preferences\"\n                                target=\"_blank\"\u003enotification preferences\u003c/a\u003e or\n                              \u003ca href=\"https://notifications-ui.{{.Domain}}/unsubscribe/{{.UnsubscribeID}}\"\n                                target=\"_blank\"\u003eunsubscribe\u003c/a\u003e\n                            \u003c/td\u003e\n                        \u003c/tr\u003e\n                        \u003ctr\u003e\n                            \u003ctd align=\"left\" valign=\"middle\" style=\"padding-bottom:20px\"\u003ePivotal Cloud Foundry, and the Pivotal Cloud Foundry logo are registered\n                                trademarks or trademarks of Pivotal Software, Inc.\n                                in the United States and other countries. All other\n                                trademarks used herein are the property of their\n                                respective owners.\n                                \u003ca\u003e\n                            \u003c/td\u003e\n                        \u003c/tr\u003e\n                        \u003ctr\u003e\n                            \u003ctd align=\"left\" valign=\"middle\" style=\"padding-bottom:20px\"\u003e\u00A9 2015 Pivotal Software, Inc. All rights reserved.\n                                Published in the USA.\n                                \u003ca\u003e\n                            \u003c/td\u003e\n                        \u003c/tr\u003e\n                    \u003c/tbody\u003e\n                \u003c/table\u003e\n            \u003c/td\u003e\n        \u003c/tr\u003e\n    \u003c/tbody\u003e\n\u003c/table\u003e\n",
+        "text": "_____\n\n\nPivotal CF\n\n{{.Text}}\n\nManage your notification preferences:\nhttps://notifications-ui.{{.Domain}}/preferences\n\nUnsubscribe from Pivotal emails:\nhttps://notifications-ui.{{.Domain}}/unsubscribe/{{.UnsubscribeID}}\n\nPivotal Cloud Foundry, and the Pivotal Cloud Foundry logo are registered trademarks or trademarks of Pivotal Software, Inc. in the United States and other countries. All other trademarks used herein are the property of their respective owners.\n\n\u00A9 2015 Pivotal Software, Inc. All rights reserved. Published in the USA.\n\n______\n",
+        "metadata": {}
+      }
+
+jobs:
+- name: push-apps-manager
+  properties:
+    services:
+      authentication:
+        CF_CLIENT_ID: portal
+        CF_CLIENT_SECRET: (( grab properties.uaa.clients.portal.secret ))
+        CF_LOGIN_SERVER_URL: (( concat "https://login." meta.cf.system_domain ))
+        CF_UAA_SERVER_URL: (( concat "https://uaa." meta.cf.system_domain ))
+    env:
+      secret_token: (( grab meta.cf.creds.apps_manager.signing_token ))
+      cf_cc_api_url: (( concat "https://api." meta.cf.system_domain ))
+      cf_loggregator_http_url: (( concat "https://loggregator." meta.cf.system_domain ))
+      cf_console_url: (( concat "https://apps." meta.cf.system_domain ))
+      cf_notifications_service_url: (( concat "https://notifications." meta.cf.system_domain ))
+    ssl:
+      disable_http_for_links: true
+
+
+
