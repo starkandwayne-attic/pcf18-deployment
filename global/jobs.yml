@@ -449,7 +449,7 @@ jobs:
   networks: (( param "Define the acceptance_tests networking" ))
   resource_pool: (( param "Define the acceptance_tests resource pool" ))
   templates:
-  - { name: acceptance-tests, release: cf
+  - { name: acceptance-tests, release: cf }
 - name: smoke_tests
   .: (( inject meta.jobs.errand ))
   networks: (( param "Define the smoke_tests networking" ))
@@ -509,9 +509,10 @@ jobs:
   networks: (( param "Define the smoke_tests networking" ))
   resource_pool: (( param "Define the smoke_tests resource pool" ))
   templates:
+  - { name: test-autoscaling, release: cf-autoscaling }
 - name: diego-acceptance-tests
   .: (( inject meta.jobs.errand ))
   networks: (( param "Define the smoke_tests networking" ))
   resource_pool: (( param "Define the smoke_tests resource pool" ))
   templates:
-  - name: { acceptance-tests, release: diego}
+  - { name: acceptance-tests, release: diego}
