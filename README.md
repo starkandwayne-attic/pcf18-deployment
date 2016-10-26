@@ -8,7 +8,7 @@ Creating a new PCF Deployment
 ======================================
 
 To create a new [Genesis][1] based deployment of Cloud Foundry, run
-`genesis new deployment --template cf`. This will create a new repo
+`genesis new deployment --template pcf18`. This will create a new repo
 called `cf-deployments` for you, and pull in the
 `github.com/starkandwayne/pcf18-deployment` repo as the `upstream` remote,
 copying the contents of `global/*` into the new `cf-deployments` repo.
