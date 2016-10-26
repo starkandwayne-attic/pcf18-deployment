@@ -31,7 +31,7 @@ Deploying on BOSH-Lite
 Deploying CF with these templates on BOSH-Lite is *really* easy:
 
 ```
-$ genesis new deployment --template cf
+$ genesis new deployment --template pcf18
 $ cd cf-deployments
 $ genesis new site --template bosh-lite my-site-name # Perhaps 'bosh-lite' or 'macbook' for your site names?
 $ genesis new env my-site-name my-environment # Perhaps 'testing', 'playground', or, 'try-anything' for env names?
